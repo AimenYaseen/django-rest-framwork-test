@@ -33,11 +33,39 @@ class UserLoginSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email', 'password']
 
+
+# USER CHANGE PASSWORD SERIALIZER
+class UserEditProfileSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=20)
+    password = serializers.CharField(max_length=20, min_length=8,style={'input_type': 'password'}, write_only=True)
+    password2 = serializers.CharField(max_length=20, min_length=8,style={'input_type': 'password'}, write_only=True)
+
+    class Meta:
+        fields=['name', 'password', 'password2']
+
+    def validate(self, attrs):
+        password = attrs.get('password')
+        password2 = attrs.get('password2')
+        user = self.context.get('user')
+        name = attrs.get('name')
+
+        if password != password2:
+            raise serializers.ValidationError("Password and Confirm password should match with each other")
+        user.set_password(password)
+        user.name = name
+        print(user.name)
+        user.save()
+        return attrs
+
+    # def update(self, instance, validated_data):
+    #     return super().update(instance, validated_data)
+
+
 # USER PROFILE SERIALIZER
-class UserProfileSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'name']
+        fields = ['email', 'name']
 
 # USER CHANGE PASSWORD SERIALIZER
 class UserChangePasswordSerializer(serializers.Serializer):
@@ -57,3 +85,8 @@ class UserChangePasswordSerializer(serializers.Serializer):
         user.set_password(password)
         user.save()
         return attrs
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=User
+        fields = ['id', 'name', 'email']

@@ -3,11 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
 from rest_framework import permissions
-from yaml import serialize
+from rest_framework import generics, mixins
 
-from .serializers import UserChangePasswordSerializer, UserLoginSerializer, UserProfileSerializer, UserRegistrationSerializer
+from .serializers import UserChangePasswordSerializer, UserEditProfileSerializer, UserLoginSerializer, UserProfileSerializer, UserRegistrationSerializer, UserSerializer
 from .renderers import UserRenderers
 from .token import get_tokens_for_user
+from .models import User
 
 # Create your views here.
 
@@ -33,6 +34,7 @@ class UserLoginView(APIView):
 
     # Post method to login user
     def post(self, request, format=None):
+        # import pdb;pdb.set_trace()
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             email = serializer.data.get('email')
@@ -70,5 +72,31 @@ class UserChangePasswordView(APIView):
         serializer = UserChangePasswordSerializer(data=request.data, context={'user':request.user})
         if serializer.is_valid(raise_exception=True):
             return Response({'message':'Password changed successfully!'}, status=status.HTTP_200_OK)
-
         return Response({'Errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+# Get List of Users, User Data, Edit User Profile
+class UserListGetUpdateView(
+                        mixins.ListModelMixin,
+                        mixins.UpdateModelMixin,
+                        generics.GenericAPIView
+                        ):
+     queryset = User.objects.all()
+     permission_classes = [ permissions.IsAuthenticatedOrReadOnly ]
+
+     def get(self, request, *args, **kwargs):
+           return self.list(request, *args, **kwargs)
+
+     def put(self, request, *args, **kwargs):
+        serializer = UserEditProfileSerializer(data=request.data, context={'user':request.user})
+        # print(serializer.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer2 = UserSerializer(request.user)
+            message = f'Profile Edited successfully!\n {serializer2.data}'
+            return Response({'message':message}, status=status.HTTP_200_OK)
+        return Response({'Errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+     def get_serializer_class(self):
+        if self.request.user.is_authenticated:
+           return UserProfileSerializer
+        return UserSerializer
+
