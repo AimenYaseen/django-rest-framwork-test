@@ -36,9 +36,9 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
 # USER CHANGE PASSWORD SERIALIZER
 class UserEditProfileSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=20)
-    password = serializers.CharField(max_length=20, min_length=8,style={'input_type': 'password'}, write_only=True)
-    password2 = serializers.CharField(max_length=20, min_length=8,style={'input_type': 'password'}, write_only=True)
+    name = serializers.CharField(max_length=20, required=False)
+    password = serializers.CharField(max_length=20, min_length=8,style={'input_type': 'password'}, write_only=True, required=False)
+    password2 = serializers.CharField(max_length=20, min_length=8,style={'input_type': 'password'}, write_only=True, required=False)
 
     class Meta:
         fields=['name', 'password', 'password2']
@@ -87,6 +87,8 @@ class UserChangePasswordSerializer(serializers.Serializer):
         return attrs
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    post_set = serializers.PrimaryKeyRelatedField(many=True, read_only = True)
+    
     class Meta:
         model=User
-        fields = ['id', 'name', 'email']
+        fields = ['id', 'name', 'email', 'post_set']

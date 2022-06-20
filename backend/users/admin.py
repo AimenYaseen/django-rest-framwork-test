@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from users.models import User
+from .models import Post
+from .models import User
 
 # Register custom User models here.
 class UserAdmin(BaseUserAdmin):
@@ -29,5 +30,6 @@ class UserAdmin(BaseUserAdmin):
 
 # Now register the new UserAdmin...
 admin.site.register(User, UserAdmin)
+admin.site.register(Post)
 # ... and, since we're not using Django's built-in permissions,
 # unregister the Group model from admin.

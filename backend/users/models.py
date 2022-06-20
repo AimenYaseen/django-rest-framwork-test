@@ -69,3 +69,13 @@ class User(AbstractBaseUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
+
+class Post(models.Model):
+    title = models.CharField(max_length=100, blank=True, default='')
+    body = models.TextField(blank=True, default='')
+    # Foreign Key
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']

@@ -56,8 +56,6 @@ class UserProfileView(APIView):
 
     # Getting User Data
     def get(self, request, format=None):
-        print(request.data)
-        print(request.user)
         serializer = UserProfileSerializer(request.user)
         return Response({'User Profile': serializer.data})
 
