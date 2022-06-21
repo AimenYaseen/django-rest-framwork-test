@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 from rest_framework import permissions
 from rest_framework import generics, mixins
 
-from .serializers import UserChangePasswordSerializer, UserEditProfileSerializer, UserLoginSerializer, UserProfileSerializer, UserRegistrationSerializer, UserSerializer
+from .serializers import UserEditProfileSerializer, UserLoginSerializer, UserProfileSerializer, UserRegistrationSerializer, UserSerializer
 from .renderers import UserRenderers
 from .token import get_tokens_for_user
 from .models import User
@@ -59,30 +59,23 @@ class UserProfileView(APIView):
         serializer = UserProfileSerializer(request.user)
         return Response({'User Profile': serializer.data})
 
-class UserChangePasswordView(APIView):
-
-    # Classes
-    renderer_classes = [UserRenderers]
-    permission_classes = [permissions.IsAuthenticated]
-
-    # Change user password
-    def post(self, request, format=None):
-        serializer = UserChangePasswordSerializer(data=request.data, context={'user':request.user})
-        if serializer.is_valid(raise_exception=True):
-            return Response({'message':'Password changed successfully!'}, status=status.HTTP_200_OK)
-        return Response({'Errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 # Get List of Users, User Data, Edit User Profile
 class UserListGetUpdateView(
                         mixins.ListModelMixin,
                         mixins.UpdateModelMixin,
+                        mixins.RetrieveModelMixin,
                         generics.GenericAPIView
                         ):
      queryset = User.objects.all()
      permission_classes = [ permissions.IsAuthenticatedOrReadOnly ]
 
      def get(self, request, *args, **kwargs):
-           return self.list(request, *args, **kwargs)
+         pk = kwargs.get('pk')
+        #  user = User.objects.filter(pk=pk)
+        #  if pk is not None:
+        #     return self.retrieve(request, *args, **kwargs)
+         return self.list(request, *args, **kwargs)
 
      def put(self, request, *args, **kwargs):
         serializer = UserEditProfileSerializer(data=request.data, context={'user':request.user})
@@ -98,3 +91,14 @@ class UserListGetUpdateView(
            return UserProfileSerializer
         return UserSerializer
 
+# class UserChangePasswordView(APIView):
+#     # Classes
+#     renderer_classes = [UserRenderers]
+#     permission_classes = [permissions.IsAuthenticated]
+
+#     # Change user password
+#     def post(self, request, format=None):
+#         serializer = UserChangePasswordSerializer(data=request.data, context={'user':request.user})
+#         if serializer.is_valid(raise_exception=True):
+#             return Response({'message':'Password changed successfully!'}, status=status.HTTP_200_OK)
+#         return Response({'Errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
